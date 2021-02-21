@@ -10,7 +10,7 @@ fi
 printf "Getting a temperature reading every %s seconds\n" $seconds
 
 while true; do
-  sleep $seconds
   ./bin/thermo --deviceid rpi --pin 7
+  sleep $seconds
   printf "Next reading in %s seconds\n" $seconds
 done

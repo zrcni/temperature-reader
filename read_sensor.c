@@ -81,7 +81,7 @@ static int read_dht22_dat()
   }
   else
   {
-    fprintf(stderr, "Data not good, skip\n");
+    fprintf(stderr, "Data not good, trying again\n");
     return 0;
   }
 }

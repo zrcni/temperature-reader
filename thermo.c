@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "MQTTClient.h"
+#include <MQTTClient.h>
 #include "conditions.h"
 
 int DEBUG = 0; /* Set to 1 to enable debugging */
@@ -21,7 +21,7 @@ struct {
   int interval; // Interval of the read loop
   char* pin; // WiringPi pin number (RPi)
 } opts = {
-  .address = "tcp://localhost:1883",
+  .address = "tcp://127.0.0.1:1883",
   .clientid = "rpi",
   .deviceid = "rpi",
   .topic = "home/livingroom/temperature",
@@ -87,6 +87,8 @@ bool GetOpts(int argc, char** argv) {
       } else {
         return false;
       }
+    } else if (strcmp(argv[pos], "--debug") == 0) {
+      DEBUG = 1;
     }
     pos++;
   }
@@ -115,6 +117,7 @@ bool GetOpts(int argc, char** argv) {
   return false;
 }
 
+// at least once
 static const int kQos = 1;
 static const unsigned long kTimeout = 10000L;
 
@@ -170,7 +173,7 @@ int Publish(char* payload, int payload_size) {
 
   if (DEBUG) {
     printf("Waiting for up to %lu seconds for publication of %s\n"
-          "on topic %s",
+          "on topic %s\n",
           (kTimeout/1000), payload, opts.topic, opts.clientid);
   }
 
@@ -189,8 +192,6 @@ int main(int argc, char* argv[]) {
   }
 
   while (1) {
-    printf("Getting a temperature reading...\n");
-
     char data[32];
     read_sensor(opts.pin, data, 32);
     struct Conditions conditions = get_conditions(data);

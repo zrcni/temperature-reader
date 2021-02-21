@@ -1,3 +1,5 @@
 .history
 bin/*
 !bin/.gitkeep
+rpi-dependencies
+dependencies
