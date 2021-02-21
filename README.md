@@ -14,14 +14,15 @@ Main entry file
 Gets the DHT22 sensor data via **get_conditions** function in conditions.c and publishes it them to an MQTT broker.
 Can be configured to read and publish once or continuously at an interval.
 
+```
+./bin/thermo --deviceid <device-id> --pin <wiringpi-pin-number> --interval <seconds> [--debug]
+```
+
 TODO: detect sensor and fail if it doesn't exist
 
 ### job.sh
 At the moment this is used to run the program in the background on a Raspberry Pi. Later I'll probably set up something to schedule the program execution.
 
-```
-./bin/thermo --deviceid <device-id> --pin <wiringpi-pin-number> --interval <seconds>
-```
 
 Currently compiling the C programs on the Raspberry Pi (super slowly), because I haven't figured out how to cross-compile dependencies.
 

@@ -33,6 +33,7 @@ void Usage() {
   printf("\t--deviceid <your device id>\n");
   printf("\t--pin <e.g. 7>\n");
   printf("\t--interval <seconds>\n");
+  printf("\t--debug\n");
 }
 
 bool GetOpts(int argc, char** argv) {
