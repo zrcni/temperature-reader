@@ -1,35 +1,29 @@
-**Currently doesn't go through Google PubSub, but instead publishes to an MQTT broker running in the local network. Leaving the documentation untouched for now.**
+Contains two binaries: **read_sensor** and **thermo**.
 
-**Note to self:** What was the Dockefile for? D: Just installing deps?
+### read_sensor.c
+Reads from DHT22 sensor. Temperature and humidity data.   
+Raspberry Pi's pin number is provided as the first argument to the built binary: `./read_sensor 7`
+Prints "temp=%.2f,hum=%.2f" to stdout.
 
-## Temperature/humidity readings 
+### conditions.c
+Lib file for thermo.c   
+Uses **read_sensor** binary to read from the sensor and puts the data into a struct.
 
-**Main** program reads condition measurements and publishes the data to Google PubSub through the MQTT Bridge
+### thermo.c
+Main file   
+Gets the DHT22 sensor data via **get_conditions** function in conditions.c and it them to an MQTT broker.
+Can be configured to read and publish once or continuously at an interval.
 
-- **Reader**: C program that reads measurements from a DHT22 sensor. Writes temperature and humidity to stdout
-- **Main**: C program that reads measurements through **Reader** and publishes the data to Google PubSub
+TODO: detect sensor and fail if it doesn't exist
 
-Started working from these:
-- https://github.com/GoogleCloudPlatform/cpp-docs-samples/blob/master/iot/mqtt-ciotc/mqtt_ciotc.c
-- https://github.com/technion/lol_dht22/blob/master/dht22.c
+### job.sh
+At the moment this is used to run the program in the background on a Raspberry Pi. Later I'll probably set up something to schedule the program execution.
 
 ```
-./bin/thermo --deviceid <device-id> --region <region-name> --registryid <registry-name> --projectid <project-id> --pin <wiringpi-pin-number> --interval <seconds>
+./bin/thermo --deviceid <device-id> --pin <wiringpi-pin-number> --interval <seconds>
 ```
 
-### Currently works like this:
-1. Parse options from args
-2. Set up authentication for MQTT client
-3. Create MQTT client
-4. Repeat every X seconds
-    - read data
-    - connect
-    - publish data
-    - disconnect
-
-MQTT client connection requires [certs](https://cloud.google.com/iot/docs/how-tos/mqtt-bridge): roots.pem, rsa_public.pem, rsa_private.pem
-
-Currently compiling the C programs on the Raspberry Pi, because I haven't figured out how to cross-compile dependencies.
+Currently compiling the C programs on the Raspberry Pi (super slowly), because I haven't figured out how to cross-compile dependencies.
 
 ### Start a process through SSH without having it exit when SSH connection is lost 
 ```
@@ -42,3 +36,9 @@ $ <command>
 
 $ screen -r
 ```
+
+Started working from these:
+- https://github.com/GoogleCloudPlatform/cpp-docs-samples/blob/master/iot/mqtt-ciotc/mqtt_ciotc.c
+- https://github.com/technion/lol_dht22/blob/master/dht22.c
+
+**Note to self:** What was the Dockefile for? D: Just for installing deps, I think?
