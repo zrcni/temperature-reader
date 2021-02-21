@@ -10,7 +10,7 @@ Lib file for thermo.c
 Uses **read_sensor** binary to read from the sensor and puts the data into a struct.
 
 ### thermo.c
-Main file   
+Main entry file   
 Gets the DHT22 sensor data via **get_conditions** function in conditions.c and it them to an MQTT broker.
 Can be configured to read and publish once or continuously at an interval.
 
