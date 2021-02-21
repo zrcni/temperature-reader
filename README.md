@@ -11,7 +11,7 @@ Uses **read_sensor** binary to read from the sensor and puts the data into a str
 
 ### thermo.c
 Main entry file   
-Gets the DHT22 sensor data via **get_conditions** function in conditions.c and it them to an MQTT broker.
+Gets the DHT22 sensor data via **get_conditions** function in conditions.c and publishes it them to an MQTT broker.
 Can be configured to read and publish once or continuously at an interval.
 
 TODO: detect sensor and fail if it doesn't exist
