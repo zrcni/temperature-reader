@@ -21,25 +21,26 @@ struct {
   int interval; // Interval of the read loop
   char* pin; // WiringPi pin number (RPi)
 } opts = {
-  .address = "tcp://127.0.0.1:1883",
-  .clientid = "rpi",
-  .deviceid = "rpi",
-  .topic = "home/livingroom/temperature",
+  .address = "",
+  .clientid = "",
+  .deviceid = "",
+  .topic = "",
   .interval = 0,
-  .pin = "7"
+  .pin = ""
 };
 
 void Usage() {
   printf("\t--deviceid <your device id>\n");
+  printf("\t--clientid <your client id>\n");
+  printf("\t--topic <mqtt topic>\n");
+  printf("\t--address <mqtt broker address>\n");
   printf("\t--pin <e.g. 7>\n");
-  printf("\t--interval <seconds>\n");
-  printf("\t--debug\n");
+  printf("\t--interval <seconds> (optional)\n");
+  printf("\t--debug (optional)\n");
 }
 
 bool GetOpts(int argc, char** argv) {
   int pos = 1;
-  bool calcvalues = false;
-  bool calctopic = true;
 
   if (argc < 2) {
     return false;
@@ -53,7 +54,16 @@ bool GetOpts(int argc, char** argv) {
         }
 
         opts.deviceid = argv[pos];
-        calcvalues = true;
+      } else {
+        return false;
+      }
+    } else if (strcmp(argv[pos], "--clientid") == 0) {
+      if (++pos < argc) {
+        if (DEBUG) {
+          printf("client id: %s\n", argv[pos]);
+        }
+
+        strcpy((char * restrict)&opts.clientid,argv[pos]);
       } else {
         return false;
       }
@@ -64,7 +74,16 @@ bool GetOpts(int argc, char** argv) {
         }
 
         strcpy((char * restrict)&opts.topic,argv[pos]);
-        calctopic=false;
+      } else {
+        return false;
+      }
+    } else if (strcmp(argv[pos], "--address") == 0) {
+      if (++pos < argc) {
+        if (DEBUG) {
+          printf("address: %s\n", argv[pos]);
+        }
+
+        opts.address = argv[pos];
       } else {
         return false;
       }
@@ -75,8 +94,6 @@ bool GetOpts(int argc, char** argv) {
         }
 
         opts.interval = atoi(argv[pos]);
-      } else {
-        return false;
       }
     } else if (strcmp(argv[pos], "--pin") == 0) {
       if (++pos < argc) {
@@ -93,29 +110,8 @@ bool GetOpts(int argc, char** argv) {
     }
     pos++;
   }
-  if (calctopic) {
-    int n = snprintf(opts.topic, sizeof(opts.topic),
-        "home/livingroom/temperature",
-        opts.deviceid);
-    if (n < 0) {
-      printf("Encoding error!\n");
-      return false;
-    }
-    if (n > sizeof(opts.topic)) {
-      printf("Error, buffer for storing device ID was too small.\n");
-      return false;
-    }
-  }
 
-  if (calcvalues) {
-    if (DEBUG) {
-      printf("client id: ");
-      printf("%s\n", opts.clientid);
-    }
-
-    return true; // Caller must free opts.clientid
-  }
-  return false;
+  return true;
 }
 
 // at least once
@@ -192,11 +188,14 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  int publish_return_code = -1;
+
   while (1) {
     char data[32];
     read_sensor(opts.pin, data, 32);
     struct Conditions conditions = get_conditions(data);
 
+    // TODO mock read_sensor?
     // mock for developing without sensors
     // struct Conditions conditions;
     // conditions.temperature = 22.2;
@@ -209,12 +208,12 @@ int main(int argc, char* argv[]) {
 
     time_t unix_timestamp = time(NULL);
 
-    char payload[128];
-    int written = sprintf(payload, "{\"temperature\":%.2f,\"humidity\":%.2f,\"timestamp\":%d}",
-      conditions.temperature, conditions.humidity, unix_timestamp);
+    char payload[512];
+    int written = sprintf(payload, "{\"temperature\":%.2f,\"humidity\":%.2f,\"timestamp\":%d,\"device_id\":\"%s\",\"client_id\":\"%s\"}",
+      conditions.temperature, conditions.humidity, unix_timestamp, opts.deviceid, opts.clientid);
 
     Connect();
-    Publish(payload, written);
+    publish_return_code = Publish(payload, written);
     MQTTClient_disconnect(client, 5000);
 
     if (opts.interval == 0) {
@@ -234,5 +233,10 @@ int main(int argc, char* argv[]) {
 
   MQTTClient_destroy(&client);
 
-  return 0;
+  if (publish_return_code == MQTTCLIENT_SUCCESS) {
+    return 0;
+  } else {
+    printf("MQTT client failed to publish message with code: %d\n", publish_return_code);
+    return 1;
+  }
 }

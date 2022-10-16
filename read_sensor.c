@@ -10,6 +10,8 @@
 static int DHTPIN = 7;
 static int dht22_dat[5] = {0,0,0,0,0};
 
+int DEBUG = 0; /* Set to 1 to enable debugging */
+
 static uint8_t sizecvt(const int read)
 {
   /* digitalRead() and friends from wiringpi are defined as returning a value
@@ -81,7 +83,9 @@ static int read_dht22_dat()
   }
   else
   {
-    fprintf(stderr, "Data not good, trying again\n");
+    if (DEBUG) {
+      fprintf(stderr, "Data not good, trying again\n");
+    }
     return 0;
   }
 }
@@ -97,7 +101,9 @@ int main (int argc, char *argv[])
     DHTPIN = atoi(argv[1]);
   }
 
-  fprintf(stderr, "reading pin %d\n", DHTPIN);
+  if (DEBUG) {
+    fprintf(stderr, "reading pin %d\n", DHTPIN);
+  }
 
   if (wiringPiSetup () == -1)
     exit(EXIT_FAILURE) ;

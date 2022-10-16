@@ -38,6 +38,11 @@ $ <command>
 $ screen -r
 ```
 
+### Apparently this works as well for doing it automatically
+```
+ssh -n -f user@host "sh -c 'cd /whereever; nohup ./whatever > /dev/null 2>&1 &'"
+```
+
 Started working from these:
 - https://github.com/GoogleCloudPlatform/cpp-docs-samples/blob/master/iot/mqtt-ciotc/mqtt_ciotc.c
 - https://github.com/technion/lol_dht22/blob/master/dht22.c
