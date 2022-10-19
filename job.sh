@@ -14,7 +14,7 @@ while true; do
   ./bin/thermo \
     --pin 7 \
     --topic home/livingroom/temperature \
-    --address tcp://127.0.0.1:1883 \
+    --address tcp://127.0.0.1:1884 \
     --deviceid rpi \
     --clientid rpi
 
